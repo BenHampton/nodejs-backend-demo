@@ -46,3 +46,37 @@ app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 ```
 app.use(errorHandler);
 ```
+
+### Error Handling
+#### Production apps use 4 patterns together. Here they are, in order:
+1. Custom App Error Class
+   - JS built-in `Error` class had no concept of HTTP status codes. When your service detects "user not found," you need to throw an error that carries a 404 status. `AppError.js` solves this
+2. Operational vs Programmer Error
+   - Operational (expected). Return a clear, specific error message with the correct HTTP status code. These are normal, they happen in healthy apps.
+   - Programmer (bugs). Log the full error with stack trace. Returns generic "Internal Server Error" error.
+3. Global Error Handler
+   - Every error from every route, service, and middleware funnels through this one function. It handles operational errors with specific messages, hides programmer error details, normalizes common error types (JWT errors, Prisma constraint violations), and logs server errors for debugging.
+4. The Complete Error Flow
+    - Example of user not found:
+```
+// Example of user not found:
+
+Service throws AppError('Not found', 404) →
+asyncHandler catches the rejection →
+calls next(err) →
+errorHandler checks isOperational →
+res.status(404).json({ error: 'Not found' })
+
+
+// Example of programmer error (bug):
+
+Service: user.name.toUpperCase() → TypeError! →
+asyncHandler catches the rejection →
+calls next(err) →
+errorHandler: no isOperational flag → 500 →
+logger.error(full stack trace) →
+res.status(500).json({ error: 'Internal Server Error' })
+```
+
+
+
