@@ -1,10 +1,24 @@
 {
   "name": "nodejs-backend-demo",
   "version": "1.0.0",
-  "description": "",
+  "description": "- app.js - Express app setup (NO listen here) - server.js - Entry point: starts HTTP + WebSocket",
   "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --runInBand --detectOpenHandles",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "migrate": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:reset": "prisma migrate reset",
+    "db:studio":  "prisma studio",
+    "db:generate": "prisma generate",
+    "lint": "eslint src/"
   },
   "repository": {
     "type": "git",
