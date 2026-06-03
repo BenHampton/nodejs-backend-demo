@@ -30,4 +30,4 @@ const config = Object.freeze({
     corsOrigins: process.env.ALLOWED_ORIGINS.split(",")
 });
 
-module.exports =  config;
+export default config;
