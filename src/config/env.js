@@ -7,7 +7,7 @@ const required = [
 const missing = required.filter(key => !process.env[key]);
 
 if (missing.length) {
-    console.error(`\n❌ Missing required env vars:\n   ${missing.join('\n   ')}\n`);
+    console.error(`Missing required env vars:\n   ${missing.join('\n   ')}\n`);
     process.exit(1);
 }
 
