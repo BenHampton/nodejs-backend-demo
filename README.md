@@ -1,54 +1,70 @@
 ## NodeJS Sandbox - Learning NodeJS
 
+#### personal machine:
+
+- nvm use 22.22.3
+
 - app.js - Express app setup (NO listen here)
 - server.js - Entry point: starts HTTP + WebSocket
 
-
 ### Middleware order (read top-to-bottom)
+
 - Middleware runs in the order you register it with app.use(). This isn't a suggestion — it's a strict sequence. If you put the JSON body parser after your route handler, your handler can't read the request body. If you put the error handler anywhere but last, it won't catch errors from later middleware.
 - Correct order for a production Express app:
 
 1. Security headers — always first, protects every response
+
 ```
 app.use(helmet());
 ```
 
 2. CORS — must come before routes so preflight requests work
+
 ```
 app.use(cors({ origin: [...], credentials: true }));
 ```
 
 3. Body parsing — turns raw bytes into req.body
+
 ```
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 ```
 
 4. Logging — structured JSON logs for every request
+
 ```
 app.use(pinoHttp({ logger }));
 ```
 
 5. Rate limiting — throttles before hitting your routes
+
 ```
 app.use('/api', rateLimiter);
 ```
 
 6. Routes — your actual API endpoints
+
 ```
 app.use('/api', routes);
 ```
+
 7. 404 handler — catches anything that didn't match a route
+
 ```
 app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 ```
+
 8. Error handler — MUST be last, MUST have 4 params
+
 ```
 app.use(errorHandler);
 ```
 
 ### Error Handling
+
 #### Production apps use 4 patterns together. Here they are, in order:
+
 1. Custom App Error Class
    - JS built-in `Error` class had no concept of HTTP status codes. When your service detects "user not found," you need to throw an error that carries a 404 status. `AppError.js` solves this
 2. Operational vs Programmer Error
@@ -57,7 +73,8 @@ app.use(errorHandler);
 3. Global Error Handler
    - Every error from every route, service, and middleware funnels through this one function. It handles operational errors with specific messages, hides programmer error details, normalizes common error types (JWT errors, Prisma constraint violations), and logs server errors for debugging.
 4. The Complete Error Flow
-    - Example of user not found:
+   - Example of user not found:
+
 ```
 // Example of user not found:
 
@@ -77,6 +94,3 @@ errorHandler: no isOperational flag → 500 →
 logger.error(full stack trace) →
 res.status(500).json({ error: 'Internal Server Error' })
 ```
-
-
-
