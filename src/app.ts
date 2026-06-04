@@ -10,6 +10,9 @@ import config from './config/env';
 import logger from './utils/logger.js';
 import errorHandler from './middleware/errorHandler';
 import routes from './routes';
+import correlationId from './middleware/correlationId';
+import { metricsEndpoint, metricsMiddleware } from './middleware/metrics';
+import { live, ready } from './controllers/health.controller';
 
 const app = express();
 
@@ -39,6 +42,9 @@ if (config.nodeEnv !== 'test') {
   app.use(pinoHttp({ logger }));
 }
 
+app.use(correlationId);
+app.use(metricsMiddleware);
+
 // 5. Rate Limiting
 app.use(
   '/api',
@@ -54,6 +60,9 @@ app.use(
 );
 
 // 6. API Routes
+app.use('/health', live);
+app.use('/health/ready', ready);
+app.use('/metrics', metricsEndpoint);
 app.use('/api', routes);
 
 // 7. API Docs (Scalar)
