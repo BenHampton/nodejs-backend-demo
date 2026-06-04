@@ -31,16 +31,15 @@ export const openapiDocument = {
   } as Record<string, unknown>,
 };
 
+openapiDocument.components.schemas.RegisterInput = toOpenApi(registerSchema);
+openapiDocument.components.schemas.LoginInput = toOpenApi(loginSchema);
+
 openapiDocument.paths['/v1/hello'] = {
   get: {
     tags: ['Hello'],
     responses: { '200': { description: 'env + test payload' } },
   },
 };
-
-openapiDocument.components.schemas.RegisterInput = toOpenApi(registerSchema);
-openapiDocument.components.schemas.LoginInput = toOpenApi(loginSchema);
-
 openapiDocument.paths['/v1/auth/register'] = {
   post: {
     tags: ['Auth'],
@@ -97,6 +96,17 @@ openapiDocument.paths['/v1/auth/refresh'] = {
 };
 openapiDocument.paths['/v1/auth/logout'] = {
   post: { tags: ['Auth'], responses: { '200': { description: 'Logged out' } } },
+};
+
+openapiDocument.paths['/v2/auth-hello'] = {
+  get: {
+    tags: ['Protected'],
+    security: bearer,
+    responses: {
+      '200': { description: 'OK — v2 nests user and adds apiVersion + issuedAt' },
+      '401': { description: 'Unauthorized' },
+    },
+  },
 };
 
 export { bearer };
