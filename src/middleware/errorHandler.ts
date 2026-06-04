@@ -1,6 +1,6 @@
 import type { ErrorRequestHandler } from 'express';
-import logger from '../utils/logger';
-import type { ApiError } from '../types/api';
+import logger from '../utils/logger.js';
+import type { ApiError } from '../types/api.js';
 
 interface Err extends Error {
   statusCode?: number;

@@ -94,3 +94,11 @@ errorHandler: no isOperational flag → 500 →
 logger.error(full stack trace) →
 res.status(500).json({ error: 'Internal Server Error' })
 ```
+
+### JWT
+
+- prints a 64-character hex string (32 random bytes):
+
+```
+node -e "const c=require('crypto');console.log('JWT_ACCESS_SECRET='+c.randomBytes(32).toString('hex'));console.log('JWT_REFRESH_SECRET='+c.randomBytes(32).toString('hex'))"
+```

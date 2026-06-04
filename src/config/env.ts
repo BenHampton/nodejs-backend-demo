@@ -5,8 +5,8 @@ const schema = z.object({
     .enum(['development', 'production', 'test'])
     .default('development'),
   PORT: z.coerce.number().default(3000),
-  // JWT_ACCESS_SECRET: z.string().min(32),
-  // JWT_REFRESH_SECRET: z.string().min(32),
+  JWT_ACCESS_SECRET: z.string().min(32),
+  JWT_REFRESH_SECRET: z.string().min(32),
   JWT_ACCESS_EXPIRES: z.string().default('15m'),
   JWT_REFRESH_EXPIRES: z.string().default('7d'),
   DATABASE_URL: z.url().optional(),
@@ -26,8 +26,8 @@ export const config = Object.freeze({
   port: env.PORT,
   nodeEnv: env.NODE_ENV,
   jwt: {
-    // accessSecret: env.JWT_ACCESS_SECRET,
-    // refreshSecret: env.JWT_REFRESH_SECRET,
+    accessSecret: env.JWT_ACCESS_SECRET,
+    refreshSecret: env.JWT_REFRESH_SECRET,
     accessExpires: env.JWT_ACCESS_EXPIRES,
     refreshExpires: env.JWT_REFRESH_EXPIRES,
   },

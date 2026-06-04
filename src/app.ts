@@ -1,20 +1,21 @@
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import pinoHttp from 'pino-http';
+import { pinoHttp } from 'pino-http';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { apiReference } from '@scalar/express-api-reference';
-import { openapiDocument } from './docs/openapi';
-import config from './config/env';
+import { openapiDocument } from './docs/openapi.js';
+import config from './config/env.js';
 import logger from './utils/logger.js';
-import errorHandler from './middleware/errorHandler';
-import routes from './routes';
-import correlationId from './middleware/correlationId';
-import { metricsEndpoint, metricsMiddleware } from './middleware/metrics';
-import { live, ready } from './controllers/health.controller';
+import errorHandler from './middleware/errorHandler.js';
+import routes from './routes/index.js';
+import correlationId from './middleware/correlationId.js';
+import { metricsEndpoint, metricsMiddleware } from './middleware/metrics.js';
+import { live, ready } from './controllers/health.controller.js';
 
 const app = express();
+app.get('/openapi.json', (_req, res) => res.json(openapiDocument));
 
 // 1. Security Headers
 // Sets X-Content-Type-Options, Strict-Transport-Security, X-Frame-Options and more. Always first.
@@ -67,7 +68,37 @@ app.use('/api', routes);
 
 // 7. API Docs (Scalar)
 // Interactive docs at /docs - powered by our OpenAPI spec.
-app.use('/docs', apiReference({ content: openapiDocument }));
+app.use(
+  '/docs',
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          'https://cdn.jsdelivr.net',
+          'https://fonts.googleapis.com',
+        ],
+        fontSrc: [
+          "'self'",
+          'https://fonts.gstatic.com',
+          'https://cdn.jsdelivr.net',
+          'data:',
+        ],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: [
+          "'self'",
+          'https://cdn.jsdelivr.net',
+          'https://api.scalar.com',
+        ],
+        workerSrc: ["'self'", 'blob:'],
+      },
+    },
+  }),
+  apiReference({ content: openapiDocument }),
+);
 app.use(express.static('docs'));
 
 // 8. Health Check

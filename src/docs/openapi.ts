@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { ZodType } from 'zod';
+import { registerSchema, loginSchema } from '../types/auth.dto.js';
 
 // Zod 4 native: schema → OpenAPI 3.0 schema object. No third-party lib.
 // io:'input' documents what the client sends (pre-transform); unrepresentable:'any'
@@ -33,12 +34,69 @@ export const openapiDocument = {
 openapiDocument.paths['/v1/hello'] = {
   get: {
     tags: ['Hello'],
-    responses: {
-      '200': {
-        description: 'env + test payload',
+    responses: { '200': { description: 'env + test payload' } },
+  },
+};
+
+openapiDocument.components.schemas.RegisterInput = toOpenApi(registerSchema);
+openapiDocument.components.schemas.LoginInput = toOpenApi(loginSchema);
+
+openapiDocument.paths['/v1/auth/register'] = {
+  post: {
+    tags: ['Auth'],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/RegisterInput' },
+        },
       },
     },
+    responses: {
+      '201': { description: 'Created' },
+      '409': { description: 'Email already in use' },
+    },
   },
+};
+
+openapiDocument.paths['/v1/auth/login'] = {
+  post: {
+    tags: ['Auth'],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: { $ref: '#/components/schemas/LoginInput' },
+        },
+      },
+    },
+    responses: {
+      '200': { description: 'OK' },
+      '401': { description: 'Invalid credentials' },
+    },
+  },
+};
+openapiDocument.paths['/v1/auth-hello'] = {
+  get: {
+    tags: ['Protected'],
+    security: bearer,
+    responses: {
+      '200': { description: 'OK' },
+      '401': { description: 'Unauthorized' },
+    },
+  },
+};
+openapiDocument.paths['/v1/auth/refresh'] = {
+  post: {
+    tags: ['Auth'],
+    responses: {
+      '200': { description: 'New access token (refresh cookie)' },
+      '401': { description: 'No/invalid refresh token' },
+    },
+  },
+};
+openapiDocument.paths['/v1/auth/logout'] = {
+  post: { tags: ['Auth'], responses: { '200': { description: 'Logged out' } } },
 };
 
 export { bearer };

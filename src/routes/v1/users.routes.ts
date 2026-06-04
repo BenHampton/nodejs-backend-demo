@@ -1,7 +1,7 @@
 // import express from 'express';
-// import ctrl from '../../controllers/users.controller';
-// import authenticate from '../../middleware/authenticate';
-// import { validateUser } from '../../middleware/validate';
+// import ctrl from '../../controllers/users.controller.js';
+// import authenticate from '../../middleware/authenticate.js';
+// import { validateUser } from '../../middleware/validate.js';
 //
 // const router = express.Router();
 //

@@ -1,7 +1,7 @@
 import http from 'http';
-import app from './app';
-import config from './config/env';
-import logger from './utils/logger';
+import app from './app.js';
+import config from './config/env.js';
+import logger from './utils/logger.js';
 // import initSockets from "./sockets/index";
 
 const SIGTERM = 'SIGTERM';
