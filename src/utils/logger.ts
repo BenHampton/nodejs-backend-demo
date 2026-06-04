@@ -1,14 +1,25 @@
-import pino from "pino";
+import pino from 'pino';
+import type { Logger } from 'pino';
 
-const logger = pino({
+const logger: Logger = pino({
   // In production, only log 'info' and above (skip 'debug')
-  level: process.env.NODE_ENV === "production" ? "info" : "debug",
-
+  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  redact: {
+    paths: [
+      'req.headers.authorization',
+      'req.headers.cookie',
+      '*.password',
+      '*.passwordHash',
+      '*.accessToken',
+      '*.refreshToken',
+    ],
+    censor: '[REDACTED]',
+  },
   // In dev, use pino-pretty for numan-readable output
   // In prod, raw JSON
   transport:
-    process.env.NODE_ENV !== "production"
-      ? { target: "pino-pretty", options: { colorize: true } }
+    process.env.NODE_ENV !== 'production'
+      ? { target: 'pino-pretty', options: { colorize: true } }
       : undefined, // raw JSON to stdout
 });
 

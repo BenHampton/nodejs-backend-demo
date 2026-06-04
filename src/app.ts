@@ -1,14 +1,15 @@
-import express from "express";
-import helmet from "helmet";
-import cors from "cors";
-import pinoHttp from "pino-http";
-import cookieParser from "cookie-parser";
-import rateLimit from "express-rate-limit";
-import { apiReference } from "@scalar/express-api-reference";
-import config from "./config/env";
-import logger from "./utils/logger.js";
-import routes from "./utils/index.js";
-import errorHandler from "./middleware/errorHandler";
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import pinoHttp from 'pino-http';
+import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
+import { apiReference } from '@scalar/express-api-reference';
+import { openapiDocument } from './docs/openapi';
+import config from './config/env';
+import logger from './utils/logger.js';
+import errorHandler from './middleware/errorHandler';
+import routes from './routes';
 
 const app = express();
 
@@ -29,48 +30,44 @@ app.use(
 // 3. Body Parsing
 // express.json() parses JSON request bodies into req.body.
 // Limit prevents denial-of-service via massive payloads
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 
 // 4. HTTP Logging
 // pino-http logs every request as structured JSON.
-if (config.nodeEnv !== "test") {
-  app.use(pinoHttp({ logger: logger }));
+if (config.nodeEnv !== 'test') {
+  app.use(pinoHttp({ logger }));
 }
 
 // 5. Rate Limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, //15 minutes
-  max: 100,
-  standardHeaders: true, // sends RateLimit-* headers
-  legacyHeaders: false,
-  message: {
-    error: "Too many requests, please try again later.",
-  },
-});
-app.use("/api", limiter);
-
-// 6. API Routes
-app.use("/api", routes);
-
-// 7. API Docs (Scalar)
-// Interactive docs at /docs - powered by our OpenAPI spec.
 app.use(
-  "/doc",
-  apiReference({
-    spec: {
-      url: "/docs/openapi.yaml",
+  '/api',
+  rateLimit({
+    windowMs: 15 * 60 * 1000, //15 minutes
+    limit: 100,
+    standardHeaders: true, // sends RateLimit-* headers
+    legacyHeaders: false,
+    message: {
+      error: 'Too many requests, please try again later.',
     },
   }),
 );
 
+// 6. API Routes
+app.use('/api', routes);
+
+// 7. API Docs (Scalar)
+// Interactive docs at /docs - powered by our OpenAPI spec.
+app.use('/docs', apiReference({ content: openapiDocument }));
+app.use(express.static('docs'));
+
 // 8. Health Check
-app.get("/health", (req, res) => {
-  res.json({
-    status: "ok",
-    uptime: process.uptime(),
-  });
-});
+// app.get("/health", (req, res) => {
+//   res.json({
+//     status: "ok",
+//     uptime: process.uptime(),
+//   });
+// });
 
 // 9. 404 Handler
 // Catches any request that didn't match a route above.

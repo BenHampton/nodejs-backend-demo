@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import helloRoutes from './v1/hello.routes';
+import { hello } from '../../controllers/hello.controller';
 
 const router = Router();
-router.use('/v1/hello', helloRoutes);
+router.get('/', hello);
 
 export default router;

@@ -1,62 +1,43 @@
-import logger from "../utils/logger";
+import type { ErrorRequestHandler } from 'express';
+import logger from '../utils/logger';
+import type { ApiError } from '../types/api';
 
-const errorHandler = (err, req, res, next) => {
-  // --- Normalize known error types --------------------------
-  // Errors that come from libraries
-  // Covert them to consistent status codes.
+interface Err extends Error {
+  statusCode?: number;
+  code?: string;
+  isOperational?: boolean;
+}
 
-  // JWT invalid or malformed
-  if (err.name === "JsonWebTokenError") {
+const errorHandler: ErrorRequestHandler = (err: Err, req, res, _next) => {
+  // Normalise known library errors
+  if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
     err.statusCode = 401;
-    err.message = "Invalid token";
     err.isOperational = true;
   }
 
-  //Prisma unique constraint violation (e.g. duplicate email)
-  if (err.code === "P2002") {
+  if (err.code === 'P2002') {
     err.statusCode = 409;
-    err.message = "A record with that value already exists";
     err.isOperational = true;
   }
 
-  // Prisma record not found (e.g., update/delete non-existent row)
-  if (err.code === "P2025") {
+  if (err.code === 'P2025') {
     err.statusCode = 404;
-    err.message = "Record not found";
     err.isOperational = true;
   }
 
-  // Malformed JSON in request body
-  if (err.type === "entity.parse.failed") {
-    err.statusCode = 400;
-    err.message = "Invalid JSON in request body";
-    err.isOperational = true;
-  }
-
-  // --- Determine status and message --------------------------
-  const status = err.statusCode || 500;
-  const message = err.isOperational
-    ? err.message // safe to show users
-    : "Internal Server Error"; // hide bug details
-
-  // --- Log Server errors --------------------------------------
+  const status = err.statusCode ?? 500;
   if (status >= 500) {
-    logger.error({
-      message: err.message,
-      stack: err.stack,
-      url: req.originalUrl,
-      method: req.method,
-      ip: req.ip,
-    });
+    req.log.error({ err }, 'Unhandled error');
   }
 
-  // --- Send response ------------------------------------------
-  res.status(status).json({
+  const body: ApiError = {
     error: {
-      // Only include the stack trace in development
-      ...(process.env.NODE_ENV === " development" && { stack: err.stack }),
+      message: err.isOperational ? err.message : 'Internal Server Error',
+      ...(err.code && { code: err.code }),
     },
-  });
+  };
+
+  res.status(status).json(body);
 };
 
 export default errorHandler;

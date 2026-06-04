@@ -8,10 +8,15 @@
  */
 
 class AppError extends Error {
-  constructor(message, statusCode) {
+  public readonly statusCode: number;
+  public readonly isOperational = true;
+  public readonly code?: string;
+
+  constructor(message: string, statusCode: number, code?: string) {
     super(message);
     this.statusCode = statusCode;
-    this.isOperational = true; // distinguishes expected error from bugs
+    this.code = code;
+    // this.isOperational = true; // distinguishes expected error from bugs
     Error.captureStackTrace(this, this.constructor);
   }
 }

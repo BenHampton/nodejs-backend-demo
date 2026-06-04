@@ -1,45 +1,56 @@
-// .env is loaded via --end-file flag in package.json scripts
+import http from 'http';
+import app from './app';
+import config from './config/env';
+import logger from './utils/logger';
+// import initSockets from "./sockets/index";
 
-import http from "http";
-import app from "./app";
-import config from "./config/env";
-import initSockets from "./sockets/index";
+const SIGTERM = 'SIGTERM';
+const SIGINT = 'SIGINT' + '';
 
-const SIGTERM = "SIGTERM";
-const SIGINT = "SIGINT" + "";
 // Create ra HTTP serve from express app.
 // Socket.io needs this - it cannot attach to app.listen() directly
 const server = http.createServer(app);
 
 // Attach WebSocket layer to the same HTTP Server
-const io = initSockets(server);
-app.locals.io = io; // makes io accessible from any controller via req.app.locals.io
+// const io = initSockets(server);
+// app.locals.io = io; // makes io accessible from any controller via req.app.locals.io
 
-// - Start Listening
+// Start Listening
 server.listen(config.port, () => {
-  logger.info(`Server running on port ${config.port} [${config.nodeEnv}]`);
+  logger.info(
+    `Server running on port ${config.port} [${config.nodeEnv}] - docs at /docs`,
+  );
 });
 
-// Graceful shutdown
+// Graceful shutdown. Each integration registers its own cleanup here
+const cleanups: Array<() => Promise<unknown>> = [];
+export const onShutdown = (fn: () => Promise<unknown>) => cleanups.push(fn);
+
 // When the hosting platform sends SIGTERM (deploy, scale-down),
 // stop accepting new connections, finish in-flight requests, exit.
-const shutdown = (signal) => {
-  logger.info(`${signal} received - shutting down gracefully`);
-  server.close(() => {
-    logger.info("All connections closed. Bye.");
+const shutdown = async (sig: string) => {
+  logger.info(`${sig} - draining`);
+  server.close(async () => {
+    await Promise.allSettled(cleanups.map((c) => c()));
     process.exit(0);
   });
+
   // Force-kill if request do not finish in 10 seconds
   setTimeout(() => {
-    logger.error("Forced shutdown - connections did not close in time");
+    logger.error('Forced shutdown - connections did not close in time');
     process.exit(1);
-  }, 10000); // 10s
+  }, 10000).unref();
 };
 process.on(SIGTERM, () => shutdown(SIGTERM));
 process.on(SIGINT, () => shutdown(SIGINT));
-
 // Last resort error catchers
-process.on("unhandledRejections", (reason) => {
-  logger.error("UNHANDLED REJECTION:", err);
+process.on('unhandledRejections', (reason) => {
+  logger.error(reason, 'unhandledRejection');
+  shutdown('unhandledRejection');
   process.exit(1); //process state is corrupted - MUST exit
+});
+
+process.on('uncaughtException', (e) => {
+  logger.error(e, 'uncaughtException');
+  process.exit(1);
 });
