@@ -1,38 +1,37 @@
-const required = [
-  "DB_HOST",
-  "DB_PORT",
-  "DB_NAME",
-  "DB_USER",
-  "DB_PASSWORD",
-  "JWT_ACCESS_SECRET",
-  "JWT_REFRESH_SECRET",
-  "ALLOWED_ORIGINS",
-];
+import {z} from 'zod'
 
-const missing = required.filter((key) => !process.env[key]);
+const schema = z.object({
+  NODE_ENV : z.enum(['development', 'production', 'test']).default('development'),
+  PORT: z.coerce.number().default(3000),
+  JWT_ACCESS_SECRET: z.string().min(32),
+  JWT_REFRESH_SECRET: z.string().min(32),
+  JWT_ACCESS_EXPIRES: z.string().default('15m'),
+  JWT_REFRESH_EXPIRES: z.string().default('7d'),
+  DATABASE_URL: z.url().optional(),
+  REDIS_URL: z.url().default('redis://localhost:6379'),
+  ALLOWED_ORIGINS: z.string().transform((s) => s.split(',')),
+})
 
-if (missing.length) {
-  console.error(`Missing required env vars:\n   ${missing.join("\n   ")}\n`);
-  process.exit(1);
+const parsed = schema.safeParse(process.env)
+if (!parsed.success) {
+  console.error('Invalid environment', z.treeifyError(parsed.error))
+  process.exit(1)
 }
 
-const config = Object.freeze({
-  port: parseInt(process.env.PORT, 10) || 3000,
-  nodeEnv: process.env.NODE_ENV || "development",
-  db: {
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT, 10),
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-  },
-  jwt: {
-    accessSecret: process.env.JWT_ACCESS_SECRET,
-    refreshSecret: process.env.JWT_REFRESH_SECRET,
-    accessExpires: process.env.JWT_ACCESS_EXPIRES || "15m",
-    refreshExpires: process.env.JWT_REFRESH_EXPIRES || "7d",
-  },
-  corsOrigins: process.env.ALLOWED_ORIGINS.split(","),
-});
+const env = parsed.data
 
+export const config = Object.freeze({
+  port: env.PORT,
+  nodeEnv: env.NODE_ENV,
+  jwt: {
+    accessSecret: env.JWT_ACCESS_SECRET,
+    refreshSecret: env.JWT_REFRESH_SECRET,
+    accessExpires: env.JWT_ACCESS_EXPIRES,
+    refreshExpires: env.JWT_REFRESH_EXPIRES,
+  },
+  redisUrl: env.REDIS_URL,
+  corsOrigins: env.ALLOWED_ORIGINS,
+})
+
+export type Config = typeof config
 export default config;
