@@ -2,6 +2,7 @@ import http from 'http';
 import app from './app.js';
 import config from './config/env.js';
 import logger from './utils/logger.js';
+import {runCleanups} from "./utils/lifecycle.js";
 // import initSockets from "./sockets/index";
 
 const SIGTERM = 'SIGTERM';
@@ -22,16 +23,13 @@ server.listen(config.port, () => {
   );
 });
 
-// Graceful shutdown. Each integration registers its own cleanup here
-const cleanups: Array<() => Promise<unknown>> = [];
-export const onShutdown = (fn: () => Promise<unknown>) => cleanups.push(fn);
-
+// Graceful shutdown — integrations register cleanup via onShutdown (lifecycle.ts).
 // When the hosting platform sends SIGTERM (deploy, scale-down),
 // stop accepting new connections, finish in-flight requests, exit.
 const shutdown = async (sig: string) => {
   logger.info(`${sig} - draining`);
   server.close(async () => {
-    await Promise.allSettled(cleanups.map((c) => c()));
+    await runCleanups()
     process.exit(0);
   });
 

@@ -1,7 +1,7 @@
 import { PrismaClient } from '../generated/prisma/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import config from './env.js';
-import { onShutdown } from '../server.js';
+import { onShutdown } from '../utils/lifecycle.js'
 import { registerHealthCheck } from '../controllers/health.controller.js';
 
 // Prisma 7: a driver adapter is mandatory; the client is generated into
