@@ -4,6 +4,7 @@ import authRoutes from './v1/auth.routes.js';
 import authHelloRoutes from './v1/auth-hello.routes.js';
 import authHelloV2Routes from './v2/auth-hello.routes.js';
 import authUserRoutes from './v1/users.routes.js';
+import authNotificationsRoutes from './v1/notification.routes.js';
 import { deprecate } from '../middleware/deprecate.js';
 
 const router = Router();
@@ -18,5 +19,7 @@ router.use('/v1/auth-hello', authHelloRoutes);
 router.use('/v2/auth-hello', authHelloV2Routes);
 
 router.use('/v1/users', authUserRoutes);
+
+router.use('/v1/notifications', authNotificationsRoutes);
 
 export default router;

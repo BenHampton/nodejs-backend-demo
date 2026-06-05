@@ -3,6 +3,7 @@ import app from './app.js';
 import logger from './utils/logger.js';
 import { setHealthChecks } from './controllers/health.controller.js';
 import prisma, { dbHealth } from './config/database.js';
+import { initSockets } from './sockets/index.js';
 
 type Cleanup = () => Promise<unknown>;
 
@@ -20,6 +21,11 @@ export async function bootstrap() {
   // Postgres
   setHealthChecks([dbHealth]); // readiness now pings Postgres
   cleanups.push(() => prisma.$disconnect()); // drained on shutdown
+
+  // Sockets
+  const io = initSockets(server);
+  app.locals.io = io;
+  cleanups.push(() => io.close());
 
   const shutdown = async (sig: string) => {
     logger.info(`${sig} - draining`);

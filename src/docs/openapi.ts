@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { ZodType } from 'zod';
 import { registerSchema, loginSchema } from '../types/auth.dto.js';
 import { listQuery } from '../types/users.dto.js';
+import {notifySchema} from "../types/notification.dto.js";
 
 // Zod 4 native: schema → OpenAPI 3.0 schema object. No third-party lib.
 // io:'input' documents what the client sends (pre-transform); unrepresentable:'any'
@@ -35,6 +36,7 @@ export const openapiDocument = {
 openapiDocument.components.schemas.RegisterInput = toOpenApi(registerSchema);
 openapiDocument.components.schemas.LoginInput = toOpenApi(loginSchema);
 openapiDocument.components.schemas.UsersListQuery = toOpenApi(listQuery);
+openapiDocument.components.schemas.NotifyInput = toOpenApi(notifySchema);
 
 //public
 openapiDocument.paths['/v1/hello'] = {
@@ -132,6 +134,19 @@ openapiDocument.paths['/v1/users/{id}'] = {
       '200': { description: 'User with posts' },
       '404': { description: 'Not found' },
     },
+  },
+};
+
+
+// Sockets
+
+// /notifications
+openapiDocument.paths['/v1/notifications'] = {
+  post: {
+    tags: ['Realtime'],
+    security: bearer,
+    requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/NotifyInput' } } } },
+    responses: { '200': { description: 'Emitted' }, '401': { description: 'Unauthorized' } },
   },
 };
 
