@@ -1,13 +1,12 @@
-import { PrismaPg } from '@prisma/adapter-pg';
-
-// Prisma 7: a driver adapter is mandatory; the client is generated into
-// src/generated (not node_modules), so it's imported by relative path.
-import config from './env.js';
 import { PrismaClient } from '../generated/prisma/client.js';
+import { PrismaPg } from '@prisma/adapter-pg';
+import config from './env.js';
 import { onShutdown } from '../server.js';
 import { registerHealthCheck } from '../controllers/health.controller.js';
 
-const adapter = new PrismaPg({ connectionString: config.databaseURL! });
+// Prisma 7: a driver adapter is mandatory; the client is generated into
+// src/generated (not node_modules), so it's imported by relative path.
+const adapter = new PrismaPg({ connectionString: config.databaseUrl! });
 const prisma = new PrismaClient({ adapter });
 
 // Because server.ts exposed onShutdown and the health controller exposed registerHealthCheck,

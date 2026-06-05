@@ -1,5 +1,6 @@
-import { SignJWT, jwtVerify } from 'jose';
 import config from '../config/env.js';
+import prisma from '../config/database.js';
+import { SignJWT, jwtVerify } from 'jose';
 import {
   AuthResult,
   LoginInput,
@@ -49,7 +50,7 @@ const safe = (u: StoredUser): SafeUser => {
   };
 };
 
-export const register = async ({
+export const registerUsingInMemory = async ({
   name,
   email,
   password,
@@ -72,6 +73,37 @@ export const register = async ({
 
   return {
     user: safe(user),
+    accessToken: await signAccess(user.id),
+    refreshToken,
+  };
+};
+
+// using postgres
+export const register = async ({
+  name,
+  email,
+  password,
+}: RegisterInput): Promise<AuthResult> => {
+  const passwordHash = await argon2.hash(password);
+
+  // Atomic: user + refresh token created together, or neither
+  const { user, refreshToken } = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: { name, email, passwordHash },
+      select: { id: true, name: true, email: true },
+    });
+
+    const refreshToken = await signRefresh(user.id);
+
+    await tx.refreshToken.create({
+      data: { userId: user.id, token: refreshToken },
+    });
+
+    return { user, refreshToken };
+  });
+
+  return {
+    user,
     accessToken: await signAccess(user.id),
     refreshToken,
   };

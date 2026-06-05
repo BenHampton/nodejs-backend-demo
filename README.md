@@ -111,3 +111,19 @@ node -e "const c=require('crypto');console.log('JWT_ACCESS_SECRET='+c.randomByte
 - `prisma migrate dev`: apply changes to database
 - `npx prisma studio`: look at the tables
 - Locally, you edit schema.prisma then run migrate dev --name <change> — it creates the migration, applies it to your DB, and auto-runs generate for you, so you rarely call generate by hand. You commit the migration files. Then on any other machine (fresh clone, CI, Docker, production), you run generate (because the client code is gitignored and missing) and migrate deploy (to apply the committed migrations to that database). So: migrate dev authors locally, migrate deploy applies elsewhere, and generate rebuilds the client code wherever it's missing.
+
+- For a new machine where neither the generated client nor the database tables exist yet, here's the full Prisma sequence (with the prerequisites, since they matter):
+
+```
+# 1. install dependencies (includes prisma, @prisma/client, @prisma/adapter-pg, pg)
+npm install
+
+# 2. make sure Postgres is running and .env has a valid DATABASE_URL
+#    (e.g. docker compose up -d postgres, or your local Postgres started)
+
+# 3. generate the typed client (gitignored, so it doesn't exist on a fresh clone)
+npx prisma generate
+
+# 4. create the tables by applying the committed migrations
+npx prisma migrate deploy
+```

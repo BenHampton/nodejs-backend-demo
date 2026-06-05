@@ -31,7 +31,7 @@ export const config = Object.freeze({
     accessExpires: env.JWT_ACCESS_EXPIRES,
     refreshExpires: env.JWT_REFRESH_EXPIRES,
   },
-  databaseURL: env.DATABASE_URL,
+  databaseUrl: env.DATABASE_URL,
   redisUrl: env.REDIS_URL,
   corsOrigins: env.ALLOWED_ORIGINS,
 });
