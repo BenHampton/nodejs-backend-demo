@@ -102,3 +102,12 @@ res.status(500).json({ error: 'Internal Server Error' })
 ```
 node -e "const c=require('crypto');console.log('JWT_ACCESS_SECRET='+c.randomBytes(32).toString('hex'));console.log('JWT_REFRESH_SECRET='+c.randomBytes(32).toString('hex'))"
 ```
+
+### Prisma
+
+- `npx prisma format`
+- `npx prisma migrate dev --name init`: creates the database tables for the first time, it takes your `schema.prisma` and makes the real Postgres database match it
+- `npx prisma generate`: It reads `schema.prisma` and writes the typed Prisma Client into `src/generated/prisma`
+- `prisma migrate dev`: apply changes to database
+- `npx prisma studio`: look at the tables
+- Locally, you edit schema.prisma then run migrate dev --name <change> — it creates the migration, applies it to your DB, and auto-runs generate for you, so you rarely call generate by hand. You commit the migration files. Then on any other machine (fresh clone, CI, Docker, production), you run generate (because the client code is gitignored and missing) and migrate deploy (to apply the committed migrations to that database). So: migrate dev authors locally, migrate deploy applies elsewhere, and generate rebuilds the client code wherever it's missing.

@@ -103,7 +103,9 @@ openapiDocument.paths['/v2/auth-hello'] = {
     tags: ['Protected'],
     security: bearer,
     responses: {
-      '200': { description: 'OK — v2 nests user and adds apiVersion + issuedAt' },
+      '200': {
+        description: 'OK — v2 nests user and adds apiVersion + issuedAt',
+      },
       '401': { description: 'Unauthorized' },
     },
   },

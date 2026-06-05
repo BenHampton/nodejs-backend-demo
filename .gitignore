@@ -79,3 +79,6 @@ logs/
 *.temp
 coverage/
 .nyc_output/
+
+# Prisma
+src/generated/prisma

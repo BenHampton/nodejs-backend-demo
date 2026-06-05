@@ -3,7 +3,7 @@ import helloRoutes from './v1/hello.routes.js';
 import authRoutes from './v1/auth.routes.js';
 import authHelloRoutes from './v1/auth-hello.routes.js';
 import authHelloV2Routes from './v2/auth-hello.routes.js';
-import {deprecate} from "../middleware/deprecate.js";
+import { deprecate } from '../middleware/deprecate.js';
 
 const router = Router();
 
