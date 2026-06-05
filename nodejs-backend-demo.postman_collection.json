@@ -1,0 +1,280 @@
+{
+  "info": {
+    "name": "nodejs-backend-demo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "nodejs",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Liveness",
+          "request": {
+            "method": "GET",
+            "url": "{{nodejs}}/health",
+            "description": "Returns server uptime and status."
+          }
+        },
+        {
+          "name": "Readiness",
+          "request": {
+            "method": "GET",
+            "url": "{{nodejs}}/health/ready",
+            "description": "Runs all registered health checks (DB, Redis, etc.) and returns aggregated status."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Observability",
+      "item": [
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "url": "{{nodejs}}/metrics",
+            "description": "Prometheus scrape endpoint — returns metrics in text/plain format."
+          }
+        },
+        {
+          "name": "OpenAPI Spec",
+          "request": {
+            "method": "GET",
+            "url": "{{nodejs}}/openapi.json",
+            "description": "Raw OpenAPI 3.x specification JSON."
+          }
+        },
+        {
+          "name": "API Docs (Scalar)",
+          "request": {
+            "method": "GET",
+            "url": "{{nodejs}}/docs",
+            "description": "Interactive Scalar API documentation UI."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{nodejs}}/api/v1/auth/register",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ben Hampton\",\n  \"email\": \"ben@example.com\",\n  \"password\": \"password1\"\n}"
+            },
+            "description": "Create a new account. Returns an accessToken and sets a refreshToken cookie (httpOnly, path=/api/v1/auth). Rate limited: 10 attempts / 15 min."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{nodejs}}/api/v1/auth/login",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ben@example.com\",\n  \"password\": \"password1\"\n}"
+            },
+            "description": "Authenticate with email and password. Returns an accessToken and sets a refreshToken cookie. Rate limited: 10 attempts / 15 min."
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', json.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{nodejs}}/api/v1/auth/refresh",
+            "description": "Exchange the refreshToken cookie for a new accessToken. No body required — reads the httpOnly cookie automatically."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{nodejs}}/api/v1/auth/logout",
+            "description": "Clears the refreshToken cookie. No body required."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hello",
+      "item": [
+        {
+          "name": "Hello (public)",
+          "request": {
+            "method": "GET",
+            "url": "{{nodejs}}/api/v1/hello",
+            "description": "Public endpoint — returns env and test values."
+          }
+        },
+        {
+          "name": "Hello (authenticated) v1 — deprecated",
+          "request": {
+            "method": "GET",
+            "url": "{{nodejs}}/api/v1/auth-hello",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "description": "Authenticated hello. Deprecated — use v2. Response includes Deprecate and Sunset headers."
+          }
+        },
+        {
+          "name": "Hello (authenticated) v2",
+          "request": {
+            "method": "GET",
+            "url": "{{nodejs}}/api/v2/auth-hello",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "description": "Authenticated hello v2 — returns user object, apiVersion, and issuedAt timestamp."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{nodejs}}/api/v1/users?limit=20",
+              "host": ["{{nodejs}}"],
+              "path": ["api", "v1", "users"],
+              "query": [
+                { "key": "limit", "value": "20", "description": "1–100, default 20" },
+                { "key": "cursor", "value": "", "description": "Pagination cursor from previous response", "disabled": true }
+              ]
+            },
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "description": "Paginated list of users. Use nextCursor from the response as the cursor query param for subsequent pages."
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{nodejs}}/api/v1/users/:id",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{nodejs}}/api/v1/users/:id",
+              "host": ["{{nodejs}}"],
+              "path": ["api", "v1", "users", ":id"],
+              "variable": [
+                { "key": "id", "value": "", "description": "User ID" }
+              ]
+            },
+            "description": "Returns a single user with their posts."
+          }
+        },
+        {
+          "name": "Cache Demo (Get User)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{nodejs}}/api/v1/cache-demo/:id",
+              "host": ["{{nodejs}}"],
+              "path": ["api", "v1", "cache-demo", ":id"],
+              "variable": [
+                { "key": "id", "value": "", "description": "User ID" }
+              ]
+            },
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "description": "Fetches a user — response includes a source field ('cache' or 'db') to demonstrate Redis caching."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Send Notification",
+          "request": {
+            "method": "POST",
+            "url": "{{nodejs}}/api/v1/notifications",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetUserId\": \"<uuid>\",\n  \"message\": \"Hello from Postman!\"\n}"
+            },
+            "description": "Emits a Socket.IO notification to the target user's room (user:<targetUserId>). targetUserId must be a valid UUID; message is 1–500 characters."
+          }
+        }
+      ]
+    }
+  ]
+}
