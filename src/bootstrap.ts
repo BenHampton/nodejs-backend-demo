@@ -4,6 +4,7 @@ import logger from './utils/logger.js';
 import { setHealthChecks } from './controllers/health.controller.js';
 import prisma, { dbHealth } from './config/database.js';
 import { initSockets } from './sockets/index.js';
+import redis, { connectRedis, redisHealth } from './config/redis.js';
 
 type Cleanup = () => Promise<unknown>;
 
@@ -19,13 +20,19 @@ export async function bootstrap() {
   // integrations wire up
 
   // Postgres
-  setHealthChecks([dbHealth]); // readiness now pings Postgres
   cleanups.push(() => prisma.$disconnect()); // drained on shutdown
 
   // Sockets
   const io = initSockets(server);
   app.locals.io = io;
   cleanups.push(() => io.close());
+
+  // Redis
+  await connectRedis(); // explicit, ordered connect
+  cleanups.push(() => redis.quit()); // drained on shutdown
+
+  // Health Checks
+  setHealthChecks([dbHealth, redisHealth]); // readiness checks
 
   const shutdown = async (sig: string) => {
     logger.info(`${sig} - draining`);

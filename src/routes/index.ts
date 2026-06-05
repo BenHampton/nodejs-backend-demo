@@ -5,6 +5,7 @@ import authHelloRoutes from './v1/auth-hello.routes.js';
 import authHelloV2Routes from './v2/auth-hello.routes.js';
 import authUserRoutes from './v1/users.routes.js';
 import authNotificationsRoutes from './v1/notification.routes.js';
+import authRedisRoutes from './v1/cache-demo.routes.js';
 import { deprecate } from '../middleware/deprecate.js';
 
 const router = Router();
@@ -20,6 +21,10 @@ router.use('/v2/auth-hello', authHelloV2Routes);
 
 router.use('/v1/users', authUserRoutes);
 
+// Sockets
 router.use('/v1/notifications', authNotificationsRoutes);
+
+// Redis
+router.use('/v1/cache-demo', authRedisRoutes);
 
 export default router;
