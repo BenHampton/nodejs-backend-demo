@@ -1,14 +1,14 @@
 import type { Request, Response } from 'express';
 
-type Check = () => Promise<{
+export type Check = () => Promise<{
   name: string;
   ok: boolean;
 }>;
 
-const checks: Check[] = [];
+let checks: Check[] = [];
 
-export const registerHealthCheck = (c: Check) => {
-  checks.push(c);
+export const setHealthChecks = (c: Check[]) => {
+  checks = c;
 };
 
 //Liveness: is the process up? (cheap - for restart decisions)

@@ -101,21 +101,13 @@ app.use(
 );
 app.use(express.static('docs'));
 
-// 8. Health Check
-// app.get("/health", (req, res) => {
-//   res.json({
-//     status: "ok",
-//     uptime: process.uptime(),
-//   });
-// });
-
-// 9. 404 Handler
+// 8. 404 Handler
 // Catches any request that didn't match a route above.
 app.use((req, res) => {
   res.status(404).json({ error: `Route ${req.method} ${req.url} not found` });
 });
 
-// 10. Global Error Handler
+// 9. Global Error Handler
 // Must be LAST. Must have 4 params. Catches every error.
 app.use(errorHandler);
 

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { ZodType } from 'zod';
 import { registerSchema, loginSchema } from '../types/auth.dto.js';
-import {listQuery} from "../types/users.dto.js";
+import { listQuery } from '../types/users.dto.js';
 
 // Zod 4 native: schema → OpenAPI 3.0 schema object. No third-party lib.
 // io:'input' documents what the client sends (pre-transform); unrepresentable:'any'
@@ -119,10 +119,13 @@ openapiDocument.paths['/v1/users'] = {
     tags: ['Users'],
     security: bearer,
     parameters: [
-      { name: 'limit',  in: 'query', schema: { type: 'integer', default: 20 } },
+      { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
       { name: 'cursor', in: 'query', schema: { type: 'string' } },
     ],
-    responses: { '200': { description: 'Paged users + pageInfo' }, '401': { description: 'Unauthorized' } },
+    responses: {
+      '200': { description: 'Paged users + pageInfo' },
+      '401': { description: 'Unauthorized' },
+    },
   },
 };
 
@@ -130,8 +133,13 @@ openapiDocument.paths['/v1/users/{id}'] = {
   get: {
     tags: ['Users'],
     security: bearer,
-    parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
-    responses: { '200': { description: 'User with posts' }, '404': { description: 'Not found' } },
+    parameters: [
+      { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+    ],
+    responses: {
+      '200': { description: 'User with posts' },
+      '404': { description: 'Not found' },
+    },
   },
 };
 
