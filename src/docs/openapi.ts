@@ -34,13 +34,19 @@ export const openapiDocument = {
 
 openapiDocument.components.schemas.RegisterInput = toOpenApi(registerSchema);
 openapiDocument.components.schemas.LoginInput = toOpenApi(loginSchema);
+openapiDocument.components.schemas.UsersListQuery = toOpenApi(listQuery);
 
+//public
 openapiDocument.paths['/v1/hello'] = {
   get: {
     tags: ['Hello'],
     responses: { '200': { description: 'env + test payload' } },
   },
 };
+
+// ---------- Version 1 endpoints ----------
+
+// /auth
 openapiDocument.paths['/v1/auth/register'] = {
   post: {
     tags: ['Auth'],
@@ -58,7 +64,6 @@ openapiDocument.paths['/v1/auth/register'] = {
     },
   },
 };
-
 openapiDocument.paths['/v1/auth/login'] = {
   post: {
     tags: ['Auth'],
@@ -76,16 +81,6 @@ openapiDocument.paths['/v1/auth/login'] = {
     },
   },
 };
-openapiDocument.paths['/v1/auth-hello'] = {
-  get: {
-    tags: ['Protected'],
-    security: bearer,
-    responses: {
-      '200': { description: 'OK' },
-      '401': { description: 'Unauthorized' },
-    },
-  },
-};
 openapiDocument.paths['/v1/auth/refresh'] = {
   post: {
     tags: ['Auth'],
@@ -99,21 +94,19 @@ openapiDocument.paths['/v1/auth/logout'] = {
   post: { tags: ['Auth'], responses: { '200': { description: 'Logged out' } } },
 };
 
-openapiDocument.components.schemas.UsersListQuery = toOpenApi(listQuery);
-
-openapiDocument.paths['/v2/auth-hello'] = {
+// /auth-hello
+openapiDocument.paths['/v1/auth-hello'] = {
   get: {
     tags: ['Protected'],
     security: bearer,
     responses: {
-      '200': {
-        description: 'OK — v2 nests user and adds apiVersion + issuedAt',
-      },
+      '200': { description: 'OK' },
       '401': { description: 'Unauthorized' },
     },
   },
 };
 
+// /users
 openapiDocument.paths['/v1/users'] = {
   get: {
     tags: ['Users'],
@@ -128,7 +121,6 @@ openapiDocument.paths['/v1/users'] = {
     },
   },
 };
-
 openapiDocument.paths['/v1/users/{id}'] = {
   get: {
     tags: ['Users'],
@@ -139,6 +131,23 @@ openapiDocument.paths['/v1/users/{id}'] = {
     responses: {
       '200': { description: 'User with posts' },
       '404': { description: 'Not found' },
+    },
+  },
+};
+
+
+// ---------- Version 2 endpoints ----------
+
+// /auth-hello
+openapiDocument.paths['/v2/auth-hello'] = {
+  get: {
+    tags: ['Protected'],
+    security: bearer,
+    responses: {
+      '200': {
+        description: 'OK — v2 nests user and adds apiVersion + issuedAt',
+      },
+      '401': { description: 'Unauthorized' },
     },
   },
 };
